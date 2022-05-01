@@ -128,7 +128,6 @@ SOFTWARE. -->
             import { hkDirdogShader } from './jsm/shaders/hkDirdogShader.js';
             import { hkFdogShader } from './jsm/shaders/hkFdogShader.js';
             import { hkHdogShader } from './jsm/shaders/hkHdogShader.js';
-            import { hkLevelShader } from './jsm/shaders/hkLevelShader.js';
 
             import { Vector2 } from 'three';
 
@@ -162,10 +161,6 @@ SOFTWARE. -->
                     DIRDOG: 3.5, // directional dog sigma
                     FLOWDOG: 5.0, // flowdog sigma
                     THRES: 0.5, // binarization threshold
-                },
-                LEVEL: {
-                    LOWER: 0.01,
-                    UPPER: 0.99,
                 },
                 BILATERAL: {
                     SPACE: 3.0,
@@ -210,11 +205,6 @@ SOFTWARE. -->
                 fdog.add(config.FDOG, 'FLOWDOG', 3, 20).name('flowdog').onFinishChange(render);
                 fdog.add(config.FDOG, 'THRES', 0.5, 0.9999).name('thres').onFinishChange(render);
 
-                let level = gui.addFolder('Level');
-                level.open();
-                level.add(config.LEVEL, 'LOWER', 0.01, 0.5).name('lower').onFinishChange(render);
-                level.add(config.LEVEL, 'UPPER', 0.5, 0.99).name('upper').onFinishChange(render);
-                
                 gui.add({ fun: resetParameters }, 'fun').name('Reset Parameters');
 
                 gui.add({ fun: saveAsImage }, 'fun').name('Take Screenshot');
@@ -284,7 +274,6 @@ SOFTWARE. -->
 
                 bilateralShader = new Shader( hkBilateralShader );
                 grayShader = new Shader( hkGrayShader );
-                levelShader = new Shader( hkLevelShader );
                 gaussShader = new Shader( hkGaussShader );
                 adogShader = new Shader( hkAdogShader );
                 binarizeShader = new Shader( hkBinarizeShader );
@@ -315,8 +304,8 @@ SOFTWARE. -->
                         w = tex.image.width; // image width 
                         h = tex.image.height; // image height
 
-                        const _cap = 640; // internal size
-                        // const _cap = 960; // internal size
+                        // const _cap = 640; // internal size
+                        const _cap = 960; // internal size
                         const cap = 640; // display size
                         const capRatio = _cap / cap; 
                         let ar = w / h; // aspect ratio of image
@@ -385,8 +374,6 @@ SOFTWARE. -->
 
                 hkBilateral(ori, bilat, 3, 0.3);
                 hkGray(bilat, gray);
-
-                hkLevel(gray, gray, config.LEVEL.LOWER, config.LEVEL.UPPER);
 
                 let s = config.ADOG.SIGMA;
                 hkGauss(gray, inner, s); // default: 1.5
@@ -464,11 +451,6 @@ SOFTWARE. -->
                 gui.__folders.FDoG.__controllers[2].updateDisplay(); // flowdog
                 gui.__folders.FDoG.__controllers[3].updateDisplay(); // thres
 
-                config.LEVEL.LOWER = "0.01";
-                config.LEVEL.UPPER = "0.99";
-                gui.__folders.Level.__controllers[0].updateDisplay(); // lower
-                gui.__folders.Level.__controllers[1].updateDisplay(); // upper
-
                 render();
             }
 
@@ -484,14 +466,6 @@ SOFTWARE. -->
             function hkGray(src, dst) {
                 let shader = grayShader;
                 shader.uniforms[ 'u_image' ].value = src.readBuffer.texture;
-                shader.render( renderer, dst );
-            }
-
-            function hkLevel(src, dst, lower, upper) {
-                let shader = levelShader;
-                shader.uniforms[ 'u_image' ].value = src.readBuffer.texture;
-                shader.uniforms[ 'u_lower' ].value = lower;
-                shader.uniforms[ 'u_upper' ].value = upper;
                 shader.render( renderer, dst );
             }
 
