@@ -112,6 +112,7 @@ SOFTWARE. -->
             import * as dat from './jsm/libs/dat.gui.module.js';
 
             import { FBO } from './jsm/postprocessing/hkFBO.js';
+            import { Shader } from './jsm/postprocessing/hkShader.js';
 			import { ShaderPass } from './jsm/postprocessing/ShaderPass.js';
 
             import { hkGaussShader } from './jsm/shaders/hkGaussShader.js';
@@ -285,20 +286,20 @@ SOFTWARE. -->
                 renderer.setSize( w, h ); // set renderer resolution
                 // document.body.appendChild( renderer.domElement ); // renderer.domElement = <canvas>
 
-                bilateralShader = new ShaderPass( hkBilateralShader );
-                grayShader = new ShaderPass( hkGrayShader );
-                levelShader = new ShaderPass( hkLevelShader );
-                gaussShader = new ShaderPass( hkGaussShader );
-                adogShader = new ShaderPass( hkAdogShader );
-                binarizeShader = new ShaderPass( hkBinarizeShader );
-                addnoiseShader = new ShaderPass( hkAddNoiseShader );
-                tensorShader = new ShaderPass( hkTensorShader );
-                tangentShader = new ShaderPass( hkTangentShader );
-                licShader = new ShaderPass( hkLICShader );
-                dirdogShader = new ShaderPass( hkDirdogShader );
-                fdogShader = new ShaderPass( hkFdogShader );
-                hdogShader = new ShaderPass( hkHdogShader );
-                renderShader = new ShaderPass( hkRenderShader );
+                bilateralShader = new Shader( hkBilateralShader );
+                grayShader = new Shader( hkGrayShader );
+                levelShader = new Shader( hkLevelShader );
+                gaussShader = new Shader( hkGaussShader );
+                adogShader = new Shader( hkAdogShader );
+                binarizeShader = new Shader( hkBinarizeShader );
+                addnoiseShader = new Shader( hkAddNoiseShader );
+                tensorShader = new Shader( hkTensorShader );
+                tangentShader = new Shader( hkTangentShader );
+                licShader = new Shader( hkLICShader );
+                dirdogShader = new Shader( hkDirdogShader );
+                fdogShader = new Shader( hkFdogShader );
+                hdogShader = new Shader( hkHdogShader );
+                renderShader = new Shader( hkRenderShader );
 
                 window.addEventListener( 'resize', onWindowResize );
 
@@ -483,28 +484,15 @@ SOFTWARE. -->
                 let shader = bilateralShader;
                 shader.uniforms[ 'u_image' ].value = src.readBuffer.texture;
                 shader.uniforms[ 'resolution' ].value = new Vector2(w * pRatio, h * pRatio);
-                
                 shader.uniforms[ 'u_half' ].value = half;
                 shader.uniforms[ 'u_range' ].value = range;
-                // plane.material = shader.material;
-                let material = plane.material;
-                plane.material = shader.material;
-                material.dispose();
-                renderer.setRenderTarget( dst.writeBuffer );
-                renderer.render( scene, camera );
-                dst.swapBuffers();
+                shader.render( renderer, dst );
             }
 
             function hkGray(src, dst) {
                 let shader = grayShader;
                 shader.uniforms[ 'u_image' ].value = src.readBuffer.texture;
-                // plane.material = shader.material;
-                let material = plane.material;
-                plane.material = shader.material;
-                material.dispose();
-                renderer.setRenderTarget( dst.writeBuffer );
-                renderer.render( scene, camera );
-                dst.swapBuffers();
+                shader.render( renderer, dst );
             }
 
             function hkLevel(src, dst, x1, y1, x2, y2) {
@@ -512,13 +500,7 @@ SOFTWARE. -->
                 shader.uniforms[ 'u_image' ].value = src.readBuffer.texture;
                 shader.uniforms[ 'u_pivot1' ].value = new Vector2(x1, y1);
                 shader.uniforms[ 'u_pivot2' ].value = new Vector2(x2, y2);
-                // plane.material = shader.material;
-                let material = plane.material;
-                plane.material = shader.material;
-                material.dispose();
-                renderer.setRenderTarget( dst.writeBuffer );
-                renderer.render( scene, camera );
-                dst.swapBuffers();
+                shader.render( renderer, dst );
             }
 
             function hkAdog(src, inner, outer, dst, scale, base) {
@@ -526,16 +508,9 @@ SOFTWARE. -->
                 shader.uniforms[ 'u_image' ].value = src.readBuffer.texture;
                 shader.uniforms[ 'u_inner' ].value = inner.readBuffer.texture;
                 shader.uniforms[ 'u_outer' ].value = outer.readBuffer.texture;
-                
                 shader.uniforms[ 'u_scale' ].value = scale;
                 shader.uniforms[ 'u_base' ].value = base;
-                // plane.material = shader.material;
-                let material = plane.material;
-                plane.material = shader.material;
-                material.dispose();
-                renderer.setRenderTarget( dst.writeBuffer );
-                renderer.render( scene, camera );
-                dst.swapBuffers();
+                shader.render( renderer, dst );
             }
 
             function hkGauss(src, dst, half) {
@@ -543,65 +518,34 @@ SOFTWARE. -->
                 shader.uniforms[ 'u_image' ].value = src.readBuffer.texture;
                 shader.uniforms[ 'resolution' ].value = new Vector2(w * pRatio, h * pRatio);
                 shader.uniforms[ 'u_half' ].value = half;
-                // plane.material = shader.material;
-                let material = plane.material;
-                plane.material = shader.material;
-                material.dispose();
-                renderer.setRenderTarget( dst.writeBuffer );
-                renderer.render( scene, camera );
-                dst.swapBuffers();
+                shader.render( renderer, dst );
             }
 
             function hkBinarize(src, dst, thres) {
                 let shader = binarizeShader;
                 shader.uniforms[ 'u_image' ].value = src.readBuffer.texture;
                 shader.uniforms[ 'u_thres' ].value = thres;  
-                // plane.material = shader.material;
-                let material = plane.material;
-                plane.material = shader.material;
-                material.dispose();
-                renderer.setRenderTarget( dst.writeBuffer );
-                renderer.render( scene, camera );
-                dst.swapBuffers();
+                shader.render( renderer, dst );
             }
 
             function hkAddNoise(src, dst, scale) {
                 let shader = addnoiseShader;
                 shader.uniforms[ 'u_image' ].value = src.readBuffer.texture;
                 shader.uniforms[ 'u_scale' ].value = scale;  
-                // plane.material = shader.material;
-                let material = plane.material;
-                plane.material = shader.material;
-                material.dispose();
-                renderer.setRenderTarget( dst.writeBuffer );
-                renderer.render( scene, camera );
-                dst.swapBuffers();
+                shader.render( renderer, dst );
             }
 
             function hkTensor(src, dst) {
                 let shader = tensorShader;
                 shader.uniforms[ 'u_image' ].value = src.readBuffer.texture;
                 shader.uniforms[ 'resolution' ].value = new Vector2(w * pRatio, h * pRatio);
-                
-                // plane.material = shader.material;
-                let material = plane.material;
-                plane.material = shader.material;
-                material.dispose();
-                renderer.setRenderTarget( dst.writeBuffer );
-                renderer.render( scene, camera );
-                dst.swapBuffers();
+                shader.render( renderer, dst );
             }
 
             function hkTangent(src, dst) {
                 let shader = tangentShader;
                 shader.uniforms[ 'u_image' ].value = src.readBuffer.texture;
-                // plane.material = shader.material;
-                let material = plane.material;
-                plane.material = shader.material;
-                material.dispose();
-                renderer.setRenderTarget( dst.writeBuffer );
-                renderer.render( scene, camera );
-                dst.swapBuffers();
+                shader.render( renderer, dst );
             }
 
             function hkLIC(src, tangent, dst, half) {
@@ -610,13 +554,7 @@ SOFTWARE. -->
                 shader.uniforms[ 'u_tangent' ].value = tangent.readBuffer.texture;  
                 shader.uniforms[ 'resolution' ].value = new Vector2(w * pRatio, h * pRatio);
                 shader.uniforms[ 'u_half' ].value = half;
-                // plane.material = shader.material;
-                let material = plane.material;
-                plane.material = shader.material;
-                material.dispose();
-                renderer.setRenderTarget( dst.writeBuffer );
-                renderer.render( scene, camera );
-                dst.swapBuffers();
+                shader.render( renderer, dst );
             }
 
             function hkDirdog(src, tangent, dst, half) {
@@ -625,13 +563,7 @@ SOFTWARE. -->
                 shader.uniforms[ 'u_tangent' ].value = tangent.readBuffer.texture;  
                 shader.uniforms[ 'resolution' ].value = new Vector2(w * pRatio, h * pRatio);
                 shader.uniforms[ 'u_half' ].value = half;
-                // plane.material = shader.material;
-                let material = plane.material;
-                plane.material = shader.material;
-                material.dispose();
-                renderer.setRenderTarget( dst.writeBuffer );
-                renderer.render( scene, camera );
-                dst.swapBuffers();
+                shader.render( renderer, dst );
             }
 
             function hkFdog(src, tangent, dst, half) {
@@ -640,47 +572,24 @@ SOFTWARE. -->
                 shader.uniforms[ 'u_tangent' ].value = tangent.readBuffer.texture;  
                 shader.uniforms[ 'resolution' ].value = new Vector2(w * pRatio, h * pRatio);
                 shader.uniforms[ 'u_half' ].value = half;
-                // plane.material = shader.material;
-                let material = plane.material;
-                plane.material = shader.material;
-                material.dispose();
-                renderer.setRenderTarget( dst.writeBuffer );
-                renderer.render( scene, camera );
-                dst.swapBuffers();
+                shader.render( renderer, dst );
             }
 
             function hkHdog(src1, src2, dst) {
                 let shader = hdogShader;
                 shader.uniforms[ 'u_adog' ].value = src1.readBuffer.texture;
                 shader.uniforms[ 'u_fdog' ].value = src2.readBuffer.texture;
-                // plane.material = shader.material;
-                let material = plane.material;
-                plane.material = shader.material;
-                material.dispose();
-                renderer.setRenderTarget( dst.writeBuffer );
-                renderer.render( scene, camera );
-                dst.swapBuffers();
+                shader.render( renderer, dst );
             }
 
             function hkRender(src, dst) {
                 let shader = renderShader;
                 shader.uniforms[ 'u_image' ].value = src.readBuffer.texture;
                 if (dst) { // renderTarget = fbo
-                    // plane.material = shader.material;
-                    let material = plane.material;
-                    plane.material = shader.material;
-                    material.dispose();
-                    renderer.setRenderTarget( dst.writeBuffer );
-                    renderer.render( scene, camera );
-                    dst.swapBuffers();
+                    shader.render( renderer, dst );
                 }
                 else { // renderTarget = screen
-                    // plane.material = shader.material;
-                    let material = plane.material;
-                    plane.material = shader.material;
-                    material.dispose();
-                    renderer.setRenderTarget( null );
-                    renderer.render( scene, camera );
+                    shader.render( renderer, null );
                 }
             }
 
